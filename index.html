@@ -4,7 +4,433 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HISTORY?????</title>
-    <link rel="stylesheet" href="des.css">
+    <!-- CSS из des.css вставлен сюда -->
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI';
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            min-height: 100vh;
+
+            background-color: var(--background-color);
+            color: var(--text-color);
+
+            transition: background-color 0.5s ease,
+                        color 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .controls {
+            display: flex;
+        }
+
+        .data-text {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            width: 100%;
+            grid-auto-flow: row dense;
+            position: relative;
+            perspective: 800px;
+        }
+
+        /* lite theme */
+        :root {
+            --background-color: #f8f8f8;
+
+            --track-background: #bebebec0;
+            --track-line: #443f3f93;
+            --track-gradient: #505050c2;
+
+            --indicator-color: #525252bb;
+
+            --output-glow: #000000;
+            --text-color: #4d4d4dd4;
+
+            --thumb-background: #7e7e7e;
+            --thumb-hover-background: #585858e7;
+
+            --thumb-hover-shadow: rgba(73, 73, 73, 0.705);
+            --thumb-dragging-shadow: rgba(82, 82, 82, 0.8);
+        }
+
+        /* dark theme */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --background-color: #212121;
+                --text-color: #c9c9c9c9;
+                --track-background: #3d3d3da6;
+                --track-line: #d4d8ee9d;
+                --track-gradient: #4646468e;
+
+                --indicator-color: #4d4d4d;
+
+                --thumb-background: rgb(96, 97, 100);
+                --thumb-hover-background: #979ca1;
+                --thumb-hover-shadow: rgb(179, 181, 189);
+
+                --thumb-dragging-shadow: rgb(166, 170, 175);
+
+                --output-glow: #000000;
+            }
+        }
+
+        .slider-data-wrapper {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 50px;
+            position: relative;
+        }
+
+        .slider-container {
+            width: 5px;
+            height: 300px;
+            position: relative;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        .slider-track {
+            position: relative;
+            left: 50%;
+            top: 0;
+            height: 100%;
+            width: 5px;
+            transform: translateX(-50%);
+
+            background-color: var(--track-background, #ccc);
+            border-radius: 3px;
+            cursor: pointer;
+            overflow: hidden;
+
+            background-image: linear-gradient(0deg, transparent 0%, var(--track-gradient, #ccc) 50%, transparent 100%);
+            background-size: 100% 200%;
+            background-position: 0 0;
+
+            transition: background-position 0.3s ease;
+            -webkit-mask-image: linear-gradient(0deg, transparent, white 15px, white calc(100% - 15px), transparent);
+            mask-image: linear-gradient(0deg, transparent, white 15px, white calc(100% - 15px), transparent);
+        }
+
+        .slider-indicator {
+            position: absolute;
+            left: 50%;
+            width: 5px;
+            height: 6px;
+            background-color: var(--track-background, #ccc);
+            transform: translateX(-50%);
+        }
+
+        .slider-indicator-left {
+            top: 0;
+        }
+
+        .slider-indicator-right {
+            bottom: 0;
+            top: auto;
+        }
+
+        .slider-indicator-circle-container {
+            position: absolute;
+            left: 0%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .slider-indicator-circle {
+            position: relative;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--track-background, #ccc);
+
+            opacity: 0.35;
+
+            filter: blur(2px);
+            transition: opacity 0.3s ease,
+                        filter 0.3s ease,
+                        transform 0.3s ease,
+                        width 0.3s ease,
+                        border-radius 0.3s ease,
+                        height 0.3s ease,
+                        background-color 0.3s ease;
+        }
+
+        .slider-indicator-circle.active {
+            opacity: 1;
+            filter: blur(2px);
+        }
+
+        .slider-indicator-circle.inactive {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .slider-indicator-circle-left {
+            left: 3px;
+            top: -17px;
+        }
+
+        .slider-indicator-circle-right {
+            left: 3px;
+            bottom: -17px;
+            top: auto;
+        }
+
+        .slider-indicator-circle.active.slider-indicator-circle-left {
+            background-color: var(--indicator-color, #4a89e8);
+            height: 6px;
+            width: 15px;
+            border-radius: 1;
+            transform: translateY(-10px);
+            transition: background-color 0.3s ease,
+                        width 0.3s ease,
+                        height 0.3s ease,
+                        transform 0.3s ease;
+        }
+
+        .slider-indicator-circle.active.slider-indicator-circle-right {
+            background-color: var(--indicator-color, #4a89e8);
+
+            height: 6px;
+            width: 15px;
+            border-radius: 1;
+
+            transform: translateY(10px);
+            transition: background-color 0.3s ease,
+                        width 0.3s ease,
+                        height 0.3s ease,
+                        transform 0.3s ease;
+        }
+
+        .slider-thumb {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            width: 8px;
+            height: 8px;
+
+            background-color: var(--thumb-background, #007bff);
+
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+
+            cursor: grab;
+
+            transition: background-color 0.3s ease,
+                        box-shadow 0.3s ease,
+                        transform 0.2s ease;
+
+            box-shadow: 0 0 10px var(--thumb-shadow, rgba(127, 132, 150, 0.9));
+        }
+
+        .slider-container:hover .slider-thumb {
+            transform: translate(-50%, -50%) scale(1.8);
+            box-shadow: 0 0 8px var(--thumb-hover-shadow, rgba(73, 73, 73, 0.505));
+        }
+
+        .slider-thumb.dragging {
+            transform: translate(-50%, -50%) scale(2.2);
+            cursor: grabbing;
+            box-shadow: 0 0 12px var(--thumb-dragging-shadow, rgba(82, 82, 82, 0.8));
+        }
+
+        .slider-thumb:hover {
+            background-color: var(--thumb-hover-background, #62aeff);
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+
+        .slider-output {
+            font-size: smaller;
+            font-weight: 100;
+
+            color: var(--text-color);
+
+            position: absolute;
+            left: -20px;
+
+            white-space: nowrap;
+            user-select: none;
+            cursor: pointer;
+
+            transform: translateY(-50%);
+            transition: color 0.3s ease;
+            filter: blur(0px);
+
+            pointer-events: auto;
+        }
+
+        .slider-snap-point {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 12px;
+            height: 1px;
+
+            background-color: var(--track-line, #000000);
+            pointer-events: none;
+
+            transition: background-color 0.3s ease,
+                        box-shadow 0.3s ease,
+                        transform 0.3s ease,
+                        filter 0.3s ease;
+
+            box-shadow: 0 0 5px var(--thumb-shadow, rgba(255, 255, 255, 1));
+
+        }
+
+        .data-item {
+            height: auto;
+            break-inside: avoid;
+
+            background-color: var(--block-background-color);
+            border: 1px solid var(--block-border-color);
+            box-shadow: 0 2px 8px rgba(99, 97, 97, 0.2);
+
+            padding: 15px;
+            border-radius: 8px;
+            word-wrap: break-word;
+
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            transform-origin: center center;
+
+            transition: transform 0.25s ease-out,
+                        box-shadow 0.3s ease-out,
+                        opacity 0.25s ease-out,
+                        background-color 0.3s ease,
+                        border-color 0.3s ease;
+
+            will-change: transform, opacity, box-shadow;
+            position: relative;
+            z-index: 1;
+        }
+
+        .data-item.popping-in {
+            animation: itemPopIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        @keyframes itemPopIn {
+            0% { opacity: 0; transform: scale(0.5) translateY(40px); }
+            65% { opacity: 1; transform: scale(1.04) translateY(2); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .data-item:hover {
+            transform: scale(1.1) translateY(-4px);
+            box-shadow: 0 4px 20px rgba(95, 93, 93, 0.3);
+            z-index: 10;
+        }
+
+        .data-item strong {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-color);
+            opacity: 0.8;
+        }
+
+        .data-item > span {
+            display: inline;
+        }
+
+        .data-item span > span {
+            display: inline-block;
+            opacity: 0;
+            transition: opacity 0.4s ease-out;
+            transform: translateY(5px);
+        }
+
+
+        .data-item.fading-out {
+            opacity: 0 !important;
+            transform: translateY(10px) scale(0.95);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .data-item.fading-in {
+            opacity: 0;
+            animation: itemFadeIn 0.3s ease-out forwards;
+        }
+
+        @keyframes itemFadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(10px); }
+        }
+
+        @keyframes itemFadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .data-container {
+            position: relative;
+            height: 300px;
+            width: 300px;
+            margin-left: 20px;
+        }
+
+        .year-container {
+            position: relative;
+            height: 300px;
+            width: 60px;
+        }
+
+
+        .year-container-original {
+            position: absolute;
+            right: 100%;
+            margin-right: 20px;
+            top: 0;
+            height: 100%;
+            width: auto;
+            pointer-events: none;
+        }
+
+        .data-container-right {
+            width: 500px;
+            height: auto;
+            flex-grow: 1;
+            position: relative;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -19,7 +445,824 @@
             </div>
         </div>
     </div>
-    <script src="data.js"></script>
-    <script src="script.js"></script>
+
+    <!-- JavaScript из data.js вставлен сюда -->
+    <script>
+        const censusData = {
+            "data": [
+                {
+                    "year": "1897",
+                    "territory_km2": "20121420",
+                    "world_rank": "3-e",
+                    "total_population": "125640021 чел.",
+                    "density_km2": "6.24",
+                    "urban_population_share": "▬ 13.4%",
+                    "male_population_share": "▬ 49.7%",
+                    "female_population_share": "▬ 50.3%",
+                    "largest_city": "С.-Петербург (1 264 920 чел.)",
+                    "second_largest_city": "Москва (ок. 1 038 625 чел.)",
+                    "russian_population": "55 667 469 чел.",
+                    "russian_population_share": "▬ 44.3%",
+                    "national_minorities": "Малороссы (22 380 551 чел.)\nТюрки (13 373 867 чел.)",
+                    "flag": "Российская империя"
+                },
+                {
+                    "year": "1920",
+                    "territory_km2": "19651446",
+                    "world_rank": "3-e",
+                    "total_population": "136800000 чел.",
+                    "density_km2": "6.96",
+                    "urban_population_share": "▲ 15.3%",
+                    "male_population_share": null,
+                    "female_population_share": null,
+                    "largest_city": "Москва (ок. 1 028 200 чел.)",
+                    "second_largest_city": "Петроград (ок. 740 000 чел.)",
+                    "russian_population": "—",
+                    "russian_population_share": null,
+                    "national_minorities": "Украинцы (—)\nБелорусы (—)",
+                    "flag": "РСФСР"
+                },
+                {
+                    "year": "1926",
+                    "territory_km2": "21176187",
+                    "world_rank": "3-e",
+                    "total_population": "147027915",
+                    "density_km2": "6.94",
+                    "urban_population_share": "▲ 17.9%",
+                    "male_population_share": "▼ 48.3%",
+                    "female_population_share": "▲ 51.7%",
+                    "largest_city": "Москва (2 025 947 чел.)",
+                    "second_largest_city": "Ленинград (1 590 770 чел.)",
+                    "russian_population": "77 791 124 чел.",
+                    "russian_population_share": "▲ 52.9%",
+                    "national_minorities": "Украинцы (31 194 976 чел.)\nБелорусы (4 738 923 чел.)",
+                    "flag": "СССР и РСФСР"
+                },
+                {
+                    "year": "1937",
+                    "territory_km2": "21176187",
+                    "world_rank": "3-e",
+                    "total_population": "162039470",
+                    "density_km2": "7.65",
+                    "urban_population_share": "▲ 27.0%",
+                    "male_population_share": "▼ 46.8%",
+                    "female_population_share": "▲ 53.2%",
+                    "largest_city": "Москва (3 798 078 чел.)",
+                    "second_largest_city": "Ленинград (ок. 2 814 500 чел.)",
+                    "russian_population": "93 933 065 чел.",
+                    "russian_population_share": "▲ 58.0%",
+                    "national_minorities": "Украинцы (26 421 212 чел.)\nБелорусы (4 874 061 чел.)",
+                    "flag": "СССР и РСФСР"
+                },
+                {
+                    "year": "1939",
+                    "territory_km2": "21176187",
+                    "world_rank": "4-e",
+                    "total_population": "170557093 чел.",
+                    "density_km2": "8.05",
+                    "urban_population_share": "▲ 32.9%",
+                    "male_population_share": "▲ 48.0%",
+                    "female_population_share": "▼ 52.0%",
+                    "largest_city": "Москва (4 131 633 чел.)",
+                    "second_largest_city": "Ленинград (3 191 304 чел.)",
+                    "russian_population": "99 591 520 чел.",
+                    "russian_population_share": "▲ 58.4%",
+                    "national_minorities": "Украинцы (28 111 007 чел.)\nБелорусы (5 275 393 чел.)",
+                    "flag": "СССР и РСФСР"
+                },
+                {
+                    "year": "1959",
+                    "territory_km2": "22402200",
+                    "world_rank": "3-e",
+                    "total_population": "208826650",
+                    "density_km2": "9.32",
+                    "urban_population_share": "▲ 47.9%",
+                    "male_population_share": "▼ 45.0%",
+                    "female_population_share": "▲ 55.0%",
+                    "largest_city": "Москва (5 045 905 чел.)",
+                    "second_largest_city": "Ленинград (3 121 196 чел.)",
+                    "russian_population": "114 113 579 чел.",
+                    "russian_population_share": "▼ 54.6%",
+                    "national_minorities": "Украинцы (37 252 930 чел.)\nБелорусы (7 913 488 чел.)",
+                    "flag": "СССР и РСФСР"
+                },
+                {
+                    "year": "1970",
+                    "territory_km2": "22 402 200",
+                    "world_rank": "3-e",
+                    "total_population": "241720134",
+                    "density_km2": "10.79",
+                    "urban_population_share": "▲ 56.2%",
+                    "male_population_share": "▲ 46.1%",
+                    "female_population_share": "▼ 53.9%",
+                    "largest_city": "Москва (6 941 961 чел.)",
+                    "second_largest_city": "Ленинград (3 949 501 чел.)",
+                    "russian_population": "129 015 140 чел.",
+                    "russian_population_share": "▼ 53.4%",
+                    "national_minorities": "Украинцы (40 753 246 чел.)\nУзбеки (9 195 093 чел.)",
+                    "flag": "СССР и РСФСР"
+                },
+                {
+                    "year": "1979",
+                    "territory_km2": "22 402 200",
+                    "world_rank": "3-e",
+                    "total_population": "262436227",
+                    "density_km2": "11.71",
+                    "urban_population_share": "▲ 62.3%",
+                    "male_population_share": "▲ 46.6%",
+                    "female_population_share": "▼ 53.4%",
+                    "largest_city": "Москва (7 830 509 чел.)",
+                    "second_largest_city": "Ленинград (4 588 183 чел.)",
+                    "russian_population": "137 397 089 чел.",
+                    "russian_population_share": "▼ 52.3%",
+                    "national_minorities": "Украинцы (42 347 387 чел.)\nУзбеки (12 455 978 чел.)",
+                    "flag": "СССР и РСФСР"
+                },
+                {
+                    "year": "1989",
+                    "territory_km2": "22 402 200",
+                    "world_rank": "3-e",
+                    "total_population": "286730817",
+                    "density_km2": "12.80",
+                    "urban_population_share": "▲ 65.8%",
+                    "male_population_share": "▲ 47.2%",
+                    "female_population_share": "▼ 52.8%",
+                    "largest_city": "Москва (8 769 117 чел.)",
+                    "second_largest_city": "Ленинград (5 023 506 чел.)",
+                    "russian_population": "145 155 489 чел.",
+                    "russian_population_share": "▼ 50.6%",
+                    "national_minorities": "Украинцы (44 186 006 чел.)\nУзбеки (16 697 825 чел.)",
+                    "flag": "СССР и РСФСР"
+                },
+                {
+                    "year": "2002",
+                    "territory_km2": "17098246",
+                    "world_rank": "6-e",
+                    "total_population": "145166731",
+                    "density_km2": "8.49",
+                    "urban_population_share": "▼ 73.3%",
+                    "male_population_share": "▼ 46.6%",
+                    "female_population_share": "▲ 53.4%",
+                    "largest_city": "Москва (10 382 754 чел.)",
+                    "second_largest_city": "С.-Петербург (4 661 219 чел.)",
+                    "russian_population": "115 889 107 чел.",
+                    "russian_population_share": "▼ 79.8%",
+                    "national_minorities": "Татары (5 554 601 чел.)\nУкраинцы (2 942 961 чел.)",
+                    "flag": "Россия"
+                },
+                {
+                    "year": "2010",
+                    "territory_km2": "17 098 246",
+                    "world_rank": "9-e",
+                    "total_population": "142856536",
+                    "density_km2": "8.35",
+                    "urban_population_share": "▲ 73.7%",
+                    "male_population_share": "▼ 46.2%",
+                    "female_population_share": "▲ 53.8%",
+                    "largest_city": "Москва (11 503 501 чел.)",
+                    "second_largest_city": "С.-Петербург (4 879 566 чел.)",
+                    "russian_population": "111 016 896 чел.",
+                    "russian_population_share": "▼ 77.7%",
+                    "national_minorities": "Татары (5 310 649 чел.)\nУкраинцы (1 927 988 чел.)",
+                    "flag": "Россия"
+                },
+                {
+                    "year": "2021",
+                    "territory_km2": "17125191",
+                    "world_rank": "9-e",
+                    "total_population": "147182123",
+                    "density_km2": "8.59",
+                    "urban_population_share": "▲ 74.8%",
+                    "male_population_share": "▲ 46.5%",
+                    "female_population_share": "▼ 53.5%",
+                    "largest_city": "Москва (13 010 112 чел.)",
+                    "second_largest_city": "С.-Петербург (5 601 911 чел.)",
+                    "russian_population": "105 579 179 чел.",
+                    "russian_population_share": "▼ 71.7%",
+                    "national_minorities": "Татары (4 713 669 чел.)\nЧеченцы (1 674 854 чел.)",
+                    "flag": "Россия"
+                }
+            ]
+        };
+    </script>
+
+    <!-- JavaScript из script.js вставлен сюда -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const sliderContainers = document.querySelectorAll('.slider-container');
+
+            if (typeof censusData === 'undefined' || !censusData || !censusData.data) {
+                console.error('Census data is missing or invalid.');
+                return;
+            }
+            const data = censusData.data;
+            if (!data || data.length === 0) {
+                console.error('Census data array is empty.');
+                return;
+            }
+
+            sliderContainers.forEach(sliderContainer => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'slider-data-wrapper';
+                const controlsContainer = sliderContainer.closest('.controls');
+                const mainContainer = controlsContainer ? controlsContainer.parentNode : sliderContainer.parentNode;
+
+                if (controlsContainer) {
+                    mainContainer.insertBefore(wrapper, controlsContainer);
+                    wrapper.appendChild(sliderContainer);
+                } else {
+                    mainContainer.insertBefore(wrapper, sliderContainer);
+                    wrapper.appendChild(sliderContainer);
+                }
+
+                const yearContainer = document.createElement('div');
+                yearContainer.className = 'year-container-original';
+                sliderContainer.appendChild(yearContainer);
+
+                const dataContainer = document.createElement('div');
+                dataContainer.className = 'data-container-right';
+                wrapper.appendChild(dataContainer);
+
+                const sliderTrack = sliderContainer.querySelector('.slider-track');
+                const sliderThumb = sliderContainer.querySelector('.slider-thumb');
+                const sliderIndicatorCircleLeft = sliderContainer.querySelector('.slider-indicator-circle-left');
+                const sliderIndicatorCircleRight = sliderContainer.querySelector('.slider-indicator-circle-right');
+
+                if (!sliderTrack || !sliderThumb || !sliderIndicatorCircleLeft || !sliderIndicatorCircleRight) {
+                    console.error('Required slider elements not found within a .slider-container.');
+                    return;
+                }
+
+                const output = document.createElement('div');
+                output.className = 'slider-output';
+                yearContainer.appendChild(output);
+
+                const dataTextContainer = document.createElement('div');
+                dataTextContainer.className = 'data-text';
+                dataContainer.appendChild(dataTextContainer);
+
+                let isDragging = false;
+                let animationFrameId = null;
+                let targetPosition;
+                let currentPosition;
+                let sliderHeight;
+                let currentDataIndex = -1;
+                let isUpdatingData = false;
+                let dataUpdateQueue = null;
+                let currentAnimatedYear = null;
+                let yearAnimationId = null;
+                let targetAnimatedYear = null;
+
+                function initializeSlider() {
+                    sliderHeight = sliderContainer.offsetHeight || sliderTrack.offsetHeight || 300;
+                    if (sliderHeight === 300 && !sliderContainer.offsetHeight && !sliderTrack.offsetHeight) {
+                        console.warn("Using fallback slider height: 300px");
+                    }
+
+                    createSnapPoints();
+                    const initialIndex = data.length - 1;
+                    const initialData = data[initialIndex];
+
+                    currentPosition = (initialIndex / (data.length - 1)) * sliderHeight;
+                    targetPosition = currentPosition;
+                    sliderThumb.style.top = `${currentPosition}px`;
+
+                    currentAnimatedYear = parseInt(initialData.year, 10);
+                    if (output) {
+                        output.textContent = currentAnimatedYear;
+                        output.style.top = `${currentPosition}px`;
+                    }
+
+                    renderDataItems(initialData, initialIndex, false);
+                    updateCircleState();
+                }
+
+                function createSnapPoints() {
+                    const numSnapPoints = data.length;
+                    sliderTrack.querySelectorAll('.slider-snap-point').forEach(el => el.remove());
+
+                    for (let i = 0; i < numSnapPoints; i++) {
+                        const snapPoint = document.createElement('div');
+                        snapPoint.classList.add('slider-snap-point');
+                        snapPoint.style.top = `${(i / (numSnapPoints - 1)) * 100}%`;
+                        sliderTrack.appendChild(snapPoint);
+                    }
+                }
+
+                function updateCircleState() {
+                    if (!sliderHeight) return;
+                    const thumbPosition = parseFloat(sliderThumb.style.top || 0);
+                    const normalizedPosition = Math.max(0, Math.min(1, thumbPosition / sliderHeight));
+                    const threshold = 0.05;
+
+                    const leftActive = normalizedPosition < threshold;
+                    const rightActive = normalizedPosition > (1 - threshold);
+
+                    sliderIndicatorCircleLeft.classList.toggle('active', leftActive);
+                    sliderIndicatorCircleLeft.classList.toggle('inactive', !leftActive);
+                    sliderIndicatorCircleRight.classList.toggle('active', rightActive);
+                    sliderIndicatorCircleRight.classList.toggle('inactive', !rightActive);
+                }
+
+                function lerp(start, finish, time) {
+                    const LERP_FACTOR = 0.1;
+                    const progress = Math.min(1, Math.max(0, time));
+                    return start + (finish - start) * progress * LERP_FACTOR;
+                }
+
+                function animateThumb() {
+                    if (animationFrameId) cancelAnimationFrame(animationFrameId);
+
+                    function step() {
+                        if (Math.abs(currentPosition - targetPosition) > 0.5) {
+                            currentPosition = lerp(currentPosition, targetPosition, 1);
+                            sliderThumb.style.top = `${currentPosition}px`;
+                            if (output) output.style.top = `${currentPosition}px`;
+                            updateSliderOutput(false);
+                            updateCircleState();
+                            animationFrameId = requestAnimationFrame(step);
+                        } else {
+                            currentPosition = targetPosition;
+                            sliderThumb.style.top = `${targetPosition}px`;
+                            if (output) output.style.top = `${targetPosition}px`;
+                            animationFrameId = null;
+                            snapToNearestPoint();
+                        }
+                    }
+                    animationFrameId = requestAnimationFrame(step);
+                }
+
+                function animateSnap() {
+                    if (animationFrameId) cancelAnimationFrame(animationFrameId);
+
+                    function step() {
+                        const distance = targetPosition - currentPosition;
+                        if (Math.abs(distance) > 0.2) {
+                            currentPosition += distance * 0.25;
+                            sliderThumb.style.top = `${currentPosition}px`;
+                            if (output) output.style.top = `${currentPosition}px`;
+                            updateSliderOutput(false);
+                            updateCircleState();
+                            animationFrameId = requestAnimationFrame(step);
+                        } else {
+                            currentPosition = targetPosition;
+                            sliderThumb.style.top = `${targetPosition}px`;
+                            if (output) output.style.top = `${targetPosition}px`;
+                            animationFrameId = null;
+                            updateCircleState();
+                        }
+                    }
+                    animationFrameId = requestAnimationFrame(step);
+                }
+
+                function updateSliderOutput(shouldScheduleDataUpdate = true) {
+                    if (!sliderTrack || !sliderHeight || !output) return;
+
+                    const thumbPosition = parseFloat(sliderThumb.style.top || 0);
+                    output.style.top = `${thumbPosition}px`;
+
+                    const positionValue = Math.max(0, Math.min(100, (thumbPosition / sliderHeight) * 100));
+                    const dataIndex = Math.round((positionValue / 100) * (data.length - 1));
+                    const clampedIndex = Math.max(0, Math.min(dataIndex, data.length - 1));
+
+                    if (shouldScheduleDataUpdate && clampedIndex !== currentDataIndex) {
+                        dataUpdateQueue = { data: data[clampedIndex], index: clampedIndex };
+                        if (!isUpdatingData) {
+                            processDataUpdateQueue();
+                        }
+                    }
+                }
+
+                function processDataUpdateQueue() {
+                    if (!dataUpdateQueue || isUpdatingData) {
+                        if (!dataUpdateQueue) isUpdatingData = false;
+                        return;
+                    }
+
+                    isUpdatingData = true;
+                    const { data: dataToShow, index: indexToShow } = dataUpdateQueue;
+                    dataUpdateQueue = null;
+
+                    if (indexToShow === currentDataIndex) {
+                        isUpdatingData = false;
+                        processDataUpdateQueue();
+                        return;
+                    }
+
+                    transitionDataItems(dataToShow, indexToShow);
+                }
+
+                function animateYearWithLerp(newTargetYear) {
+                    targetAnimatedYear = newTargetYear;
+
+                    if (yearAnimationId) {
+                        return;
+                    }
+                    if (currentAnimatedYear === null) {
+                        currentAnimatedYear = targetAnimatedYear;
+                         if (output) output.textContent = Math.round(currentAnimatedYear);
+                        return;
+                    }
+
+                    const LERP_SMOOTHING_FACTOR = 1;
+
+                    function yearLerpStep() {
+                        currentAnimatedYear = lerp(currentAnimatedYear, targetAnimatedYear, LERP_SMOOTHING_FACTOR);
+
+                        if (output) output.textContent = Math.round(currentAnimatedYear);
+
+                        if (Math.abs(currentAnimatedYear - targetAnimatedYear) > 0.1) {
+                            yearAnimationId = requestAnimationFrame(yearLerpStep);
+                        } else {
+                            currentAnimatedYear = targetAnimatedYear;
+                            if (output) output.textContent = Math.round(currentAnimatedYear);
+                            yearAnimationId = null;
+                        }
+                    }
+                    yearAnimationId = requestAnimationFrame(yearLerpStep);
+                }
+
+                async function transitionDataItems(newData, newIndex) {
+                    const oldItems = Array.from(dataTextContainer.querySelectorAll('.data-item:not(.fading-out)'));
+
+                    if (oldItems.length > 0) {
+                        const FADE_OUT_DURATION = 200;
+                        const TIMEOUT_BUFFER = 50;
+
+                        const fadeOutPromises = oldItems.map(item => {
+                            return new Promise(resolve => {
+                                item.classList.add('fading-out');
+                                setTimeout(resolve, FADE_OUT_DURATION + TIMEOUT_BUFFER);
+
+                                /*
+                                item.addEventListener('transitionend', function handler(e) {
+                                    if (e.propertyName === 'opacity' && e.target === item) {
+                                        item.removeEventListener('transitionend', handler);
+                                        resolve();
+                                    }
+                                }, { once: true });
+                                */
+                            });
+                        });
+
+                        await Promise.all(fadeOutPromises);
+                        dataTextContainer.querySelectorAll('.fading-out').forEach(el => el.remove());
+                    }
+
+                    renderDataItems(newData, newIndex, true);
+                    isUpdatingData = false;
+                    processDataUpdateQueue();
+                }
+
+
+                function renderDataItems(currentData, dataIndex, animate = true) {
+                    currentDataIndex = dataIndex;
+
+                    const dataPoints = [
+                        { key: 'Год', value: `${currentData.year} "${currentData.flag || ''}"`.trim() },
+                        { key: 'Территория', value: currentData.territory_km2 ? `${formatNumber(currentData.territory_km2)} км²` : '—' },
+                        { key: 'Население', value: currentData.total_population ? formatNumber(currentData.total_population) : '—' },
+                        { key: 'Плотность', value: currentData.density_km2 ? `${currentData.density_km2} чел./км²` : '—' },
+                        { key: 'Городское население', value: currentData.urban_population_share || '—' },
+                        { key: 'Мужчины/Женщины', value: getGenderRatio(currentData) },
+                        { key: 'Крупнейший город', value: formatCityName(currentData.largest_city) || '—' },
+                        { key: 'Второй город', value: formatCityName(currentData.second_largest_city) || '—' },
+                        { key: 'Русских', value: `${formatNumber(currentData.russian_population)}`  || '—' },
+                        { key: 'Доля русских', value: currentData.russian_population_share || '—' },
+                        { key: 'Нац. меньшинства', value: formatMinorities(currentData.national_minorities) || '—' }
+                    ];
+
+                    const fragment = document.createDocumentFragment();
+                    const BLOCK_ANIMATION_DELAY_STEP = 90; // ms
+
+                    dataPoints.forEach((point, index) => {
+                        const item = document.createElement('div');
+                        item.className = 'data-item';
+
+                        const strong = document.createElement('strong');
+                        strong.textContent = `${point.key}:`;
+                        item.appendChild(strong);
+
+                        const valueContainer = document.createElement('span');
+                        item.appendChild(valueContainer);
+
+                        const words = [];
+                        const valueHtml = point.value || '—';
+
+                        if (valueHtml.includes('<br>')) {
+                            valueContainer.innerHTML = ` ${valueHtml}`;
+                        } else if (valueHtml !== '—') {
+                            valueContainer.appendChild(document.createTextNode(' '));
+                            const textWords = valueHtml.split(/(\s+)/);
+
+                            textWords.forEach(word => {
+                                if (word.trim()) {
+                                    const wordSpan = document.createElement('span');
+
+                                    wordSpan.textContent = word;
+                                    wordSpan.style.opacity = '0';
+                                    wordSpan.style.transform = 'translateY(5px)';
+
+                                    valueContainer.appendChild(wordSpan);
+                                    words.push(wordSpan);
+                                } else {
+                                    valueContainer.appendChild(document.createTextNode(word));
+                                }
+                            });
+                        } else {
+                            valueContainer.textContent = ' —';
+                        }
+
+
+                        if (animate) {
+                            item.style.opacity = '0';
+                            item.style.transition = 'none';
+
+                            fragment.appendChild(item);
+
+                            const blockDelay = index * BLOCK_ANIMATION_DELAY_STEP;
+                            setTimeout(() => {
+                                item.style.transition = '';
+                                item.classList.add('popping-in');
+
+                                item.addEventListener('animationend', function handler(e) {
+                                    if (e.animationName === 'itemPopIn' && e.target === item) {
+                                        item.removeEventListener('animationend', handler);
+                                        item.classList.remove('popping-in');
+                                        item.style.opacity = '1';
+
+                                        animateWordsForItem(words);
+                                    }
+                                }, { once: true });
+
+                            }, blockDelay);
+
+                        } else {
+                            item.style.opacity = '1';
+                            item.style.transform = 'none';
+
+                            words.forEach(span => {
+                                span.style.opacity = '1';
+                                span.style.transform = 'none';
+                            });
+
+                            fragment.appendChild(item);
+                        }
+                    });
+
+                    dataTextContainer.appendChild(fragment);
+                }
+
+
+                function formatNumber(num) {
+                    if (num === null || num === undefined) return '—';
+                    const numStr = String(num);
+                    return numStr.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+                }
+
+                function formatCityName(city) {
+                    if (!city) return '—';
+                    return city.replace('С.-Петербург', 'Санкт-Петербург').replace('ок.', '≈');
+                }
+
+                function formatMinorities(text) {
+                    return text ? text.replace(/\n/g, '<br>') : '—';
+                }
+
+                function getGenderRatio(data) {
+                    if (!data || data.male_population_share == null || data.female_population_share == null) return '—';
+                    return `${data.male_population_share} / ${data.female_population_share}`;
+                }
+
+                function animateWordsForItem(wordSpans) {
+                    if (!wordSpans || wordSpans.length === 0) return;
+
+                    let wordDelay = 0;
+                    const WORD_ANIMATION_DELAY_STEP = 40; // ms
+                    wordSpans.forEach(wordSpan => {
+                        setTimeout(() => {
+                            wordSpan.style.opacity = '1';
+                            wordSpan.style.transform = 'translateY(0)';
+                        }, wordDelay);
+                        wordDelay += WORD_ANIMATION_DELAY_STEP;
+                    });
+                }
+
+
+                function snapToNearestPoint() {
+                    if (!sliderHeight) return;
+                    if (animationFrameId) cancelAnimationFrame(animationFrameId);
+                    animationFrameId = null;
+
+                    const thumbPosition = parseFloat(sliderThumb.style.top) || 0;
+                    const snapPoints = Array.from(sliderTrack.querySelectorAll('.slider-snap-point'));
+                    if (snapPoints.length === 0) return;
+
+                    let closestIndex = 0;
+                    let minDistance = Infinity;
+
+                    snapPoints.forEach((point, index) => {
+                        const pointPos = (index / (data.length - 1)) * sliderHeight;
+                        const distance = Math.abs(thumbPosition - pointPos);
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            closestIndex = index;
+                        }
+                    });
+
+                    targetPosition = (closestIndex / (data.length - 1)) * sliderHeight;
+                    targetPosition = Math.max(0, Math.min(targetPosition, sliderHeight));
+                    currentPosition = thumbPosition;
+
+                    animateSnap();
+
+                    if (closestIndex >= 0 && closestIndex < data.length) {
+                        const targetYear = parseInt(data[closestIndex].year, 10);
+                        animateYearWithLerp(targetYear);
+
+                        if (closestIndex !== currentDataIndex) {
+                            dataUpdateQueue = {
+                                data: data[closestIndex],
+                                index: closestIndex
+                            };
+
+                            if (!isUpdatingData)
+                                processDataUpdateQueue();
+                        }
+                    }
+                }
+
+
+                function onMouseMove(e) {
+                    if (!isDragging || !sliderHeight)
+                        return;
+
+                    const trackRect = sliderTrack.getBoundingClientRect();
+                    const newY = Math.max(0, Math.min(e.clientY - trackRect.top, sliderHeight));
+
+                    currentPosition = newY;
+
+                    sliderThumb.style.top = `${currentPosition}px`;
+                    if (output)
+                        output.style.top = `${currentPosition}px`;
+
+
+                    updateSliderOutput(true);
+                    updateCircleState();
+
+                    const positionRatio = currentPosition / sliderHeight;
+                    const estimatedIndex = positionRatio * (data.length - 1);
+                    const lowerIndex = Math.floor(estimatedIndex);
+                    const upperIndex = Math.ceil(estimatedIndex);
+
+                    if (lowerIndex >= 0 && upperIndex < data.length && lowerIndex !== upperIndex) {
+                        const lowerYear = parseInt(data[lowerIndex].year, 10);
+                        const upperYear = parseInt(data[upperIndex].year, 10);
+                        const lerpFactor = estimatedIndex - lowerIndex;
+                        const interpolatedYear = lowerYear + (upperYear - lowerYear) * lerpFactor;
+
+                        if (output)
+                            output.textContent = Math.round(interpolatedYear);
+
+                        currentAnimatedYear = interpolatedYear;
+                    } else if (lowerIndex >= 0 && lowerIndex < data.length) {
+                        const targetYear = parseInt(data[lowerIndex].year, 10);
+
+                        if (output)
+                            output.textContent = targetYear;
+
+                        currentAnimatedYear = targetYear;
+                    }
+                }
+
+                function onMouseUp() {
+                    if (!isDragging)
+                        return;
+
+                    isDragging = false;
+
+                    sliderThumb.classList.remove('dragging');
+                    document.removeEventListener('mousemove', onMouseMove);
+                    snapToNearestPoint();
+                }
+
+                sliderThumb.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    isDragging = true;
+                    sliderThumb.classList.add('dragging');
+                    document.addEventListener('mousemove', onMouseMove);
+                    document.addEventListener('mouseup', onMouseUp, { once: true });
+                    if (animationFrameId)
+                        cancelAnimationFrame(animationFrameId);
+
+                    animationFrameId = null;
+                    if (yearAnimationId)
+                        cancelAnimationFrame(yearAnimationId);
+
+                    yearAnimationId = null;
+                    dataUpdateQueue = null;
+                });
+
+
+                sliderTrack.addEventListener('click', (e) => {
+
+                    if (e.target === sliderThumb || sliderThumb.contains(e.target))
+                        return;
+
+                    if (!sliderHeight)
+                        return;
+
+                    const trackRect = sliderTrack.getBoundingClientRect();
+                    targetPosition = e.clientY - trackRect.top;
+                    targetPosition = Math.max(0, Math.min(targetPosition, sliderHeight));
+
+                    currentPosition = targetPosition;
+                    sliderThumb.style.top = `${currentPosition}px`;
+                    if (output) output.style.top = `${currentPosition}px`;
+
+                    if (animationFrameId)
+                        cancelAnimationFrame(animationFrameId);
+
+                    animationFrameId = null;
+
+                    if (yearAnimationId)
+                        cancelAnimationFrame(yearAnimationId);
+
+                     yearAnimationId = null;
+                    dataUpdateQueue = null;
+
+                    updateCircleState();
+                    snapToNearestPoint();
+                });
+
+                output.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (!sliderHeight || isDragging)
+                        return;
+
+                    const yearText = output.textContent;
+                    if (!yearText)
+                        return;
+
+                    const currentDisplayYear = Math.round(currentAnimatedYear);
+                    const yearIndex = data.findIndex(item => item.year == currentDisplayYear);
+
+                    if (yearIndex >= 0 && yearIndex !== currentDataIndex) {
+                        targetPosition = (yearIndex / (data.length - 1)) * sliderHeight;
+                        targetPosition = Math.max(0, Math.min(targetPosition, sliderHeight));
+                        currentPosition = parseFloat(sliderThumb.style.top) || 0;
+
+                        if (animationFrameId)
+                            cancelAnimationFrame(animationFrameId);
+
+                        animationFrameId = null;
+
+                        if (yearAnimationId)
+                            cancelAnimationFrame(yearAnimationId);
+
+                        yearAnimationId = null;
+                        dataUpdateQueue = null;
+
+                        animateSnap();
+
+                        const targetYear = parseInt(data[yearIndex].year, 10);
+                        animateYearWithLerp(targetYear);
+
+                        dataUpdateQueue = {
+                            data: data[yearIndex],
+                            index: yearIndex
+                        };
+
+                        if (!isUpdatingData)
+                            processDataUpdateQueue();
+                    }
+                });
+
+                requestAnimationFrame(() => { setTimeout(initializeSlider, 100); });
+
+                let resizeTimeout;
+                window.addEventListener('resize', () => {
+                    clearTimeout(resizeTimeout);
+                    resizeTimeout = setTimeout(() => {
+                        const oldHeight = sliderHeight;
+                        sliderHeight = sliderContainer.offsetHeight || sliderTrack.offsetHeight || 300;
+
+                        if (sliderHeight !== oldHeight && currentDataIndex !== -1) {
+                            currentPosition = (currentDataIndex / (data.length - 1)) * sliderHeight;
+                            targetPosition = currentPosition;
+
+                            sliderThumb.style.top = `${currentPosition}px`;
+                            if (output) output.style.top = `${currentPosition}px`;
+
+                            createSnapPoints();
+                            updateCircleState();
+                        }
+                    }, 250);
+                });
+
+            });
+        });
+    </script>
+
 </body>
 </html>
